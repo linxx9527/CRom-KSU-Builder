@@ -1,6 +1,8 @@
---- susfs.patch	2026-05-02 02:26:34.953052015 +0800
-+++ susfs.patch	2026-05-02 02:31:19.032767214 +0800
-@@ -1204,6 +1204,7 @@
+diff --git a/susfs.patch b/susfs.patch
+index dc2d5dd38..4838a513f 100644
+--- a/susfs.patch
++++ b/susfs.patch
+@@ -1204,6 +1204,7 @@ index 3823dfae5..496041576 100644
   #include <linux/shmem_fs.h>
   #include <linux/uaccess.h>
   #include <linux/pkeys.h>
