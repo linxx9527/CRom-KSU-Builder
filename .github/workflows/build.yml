@@ -70,7 +70,7 @@ on:
         description: "Kernel-Branch: such as lineage-23.2 sixteen-qpr1 etc."
         required: true
         type: string
-        default: ""
+        default: "lineage-23.2"
         
       kernel_configs:
         description: "Kernel-Configs: Select ur kernel configs(Use Manual-Type to custom it)"
@@ -79,6 +79,7 @@ on:
         default: oplus-sm8550-los
         options:
           - Manual-Type
+          - oplus-sdm845-los
           - oplus-sm8150-los
           - oplus-sm8150-yaap
           - oplus-sm8250-los
@@ -97,6 +98,7 @@ on:
         description: "KSU: KernelSU Version"
         required: true
         type: choice
+        default: None
         options:
           - None
           - Official-KernelSU
@@ -150,7 +152,7 @@ on:
           - "3.18"
 
       has_modules_repo:
-        description: "Has-Modules-Repo: Enable this ur kernel has modules repo"
+        description: "Has-Modules-Repo: Enable this ur kernel has modules repo(mostly for gki 2.0)"
         required: true
         type: boolean
         default: true
@@ -162,31 +164,31 @@ on:
         default: false
 
       enable_gcc:
-        description: "Enable-GCC: Enable the GCC support"
+        description: "Enable-GCC: Enable the GCC support(mostly for 4.14 and below)"
         required: true
         type: boolean
         default: false
       
       enable_gcc_32bits:
-        description: "Enable-GCC-32Bits: Enable the 32Bits GCC support"
+        description: "Enable-GCC-32Bits: Enable the 32Bits GCC support(mostly for 4.9 and below)"
         required: true
         type: boolean
         default: false
 
       fuck_modules_sig_protect:
-        description: "Fuck-Modules-Sig-Protect: FUCK MODULES SIG Protectttt"
+        description: "Fuck-Modules-Sig-Protect: FUCK MODULES SIG Protect(maybe need for 6.1)"
         required: true
         type: boolean
         default: false
 
       fuck_werror:
-        description: "Fuck-Werror: FUCK WERROR IN CONFIGS"
+        description: "Fuck-Werror: FUCK WERROR IN CONFIGS(by disable WERROR and CC_WERROR)"
         required: true
         type: boolean
         default: false
 
       enable_my_own_susfs_patch:
-        description: "fuck susfs: fuck susfs"
+        description: "Fuck susfs: apply patches in patches dir about susfs"
         required: true
         type: boolean
         default: false
@@ -517,6 +519,10 @@ jobs:
           else
 
             case "${{ inputs.kernel_configs }}" in
+
+              "oplus-sdm845-los")
+              make O=out enchilada_defconfig vendor/debugfs.config $DROIDSPACES_CONFIG
+              ;;
 
               "oplus-sm8150-los")
               make O=out vendor/sm8150-perf_defconfig vendor/oplus.config $DROIDSPACES_CONFIG
