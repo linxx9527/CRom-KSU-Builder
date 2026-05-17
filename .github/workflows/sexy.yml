@@ -60,6 +60,7 @@ on:
         default: oplus-sm8750-los
         options:
           - Manual-Type
+          - oplus-sdm845-los
           - oplus-sm8150-los
           - oplus-sm8150-yaap
           - oplus-sm8250-los
@@ -388,6 +389,8 @@ jobs:
             make O=out ${{ inputs.kernel_configs_manual }} $DROIDSPACES_CONFIG
           else
             case "${{ inputs.kernel_configs }}" in
+              "oplus-sdm845-los")
+                make O=out enchilada_defconfig vendor/debugfs.config $DROIDSPACES_CONFIG ;;
               "oplus-sm8150-los")
                 make O=out vendor/sm8150-perf_defconfig vendor/oplus.config $DROIDSPACES_CONFIG ;;
               "oplus-sm8150-yaap")
