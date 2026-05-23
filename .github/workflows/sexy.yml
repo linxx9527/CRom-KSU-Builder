@@ -36,7 +36,7 @@ on:
         required: true
         type: choice
         default: LineageOS
-        options: [Manual-Type, LineageOS, YAAP，PixelOS-Devices，PixelExperience-Devices，VoltageOS-Devices，BlissRoms-Devices，AxionAOSP-devices，AlphaDroid-devices，DerpFest-Devices，MistOS-Devices，crdroidandroid，Evolution-X-Devices，Infinity-X-Devices，OnePlus12R-development]
+        options: [Manual-Type, LineageOS, YAAP, PixelOS-Devices, PixelExperience-Devices, VoltageOS-Devices, BlissRoms-Devices, AxionAOSP-devices, AlphaDroid-devices, DerpFest-Devices, MistOS-Devices, crdroidandroid, Evolution-X-Devices, Infinity-X-Devices, OnePlus12R-development]
       kernel_source_manual:
         description: "Kernel-Source-Manual"
         required: false
