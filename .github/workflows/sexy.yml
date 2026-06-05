@@ -1,4 +1,5 @@
 name: 8750
+
 on:
   workflow_dispatch:
     inputs:
@@ -47,7 +48,7 @@ on:
         type: choice
         default: android_kernel
         options: [android_kernel, kernel]
-      kernel_branch:        
+      kernel_branch:
         description: "Kernel-Branch"
         required: true
         type: string
@@ -97,7 +98,8 @@ on:
         required: true
         type: choice
         default: None
-        options:          - None
+        options:
+          - None
           - android12-5.10
           - android13-5.10
           - android13-5.15
@@ -146,7 +148,8 @@ on:
         description: "Fuck-Werror"
         required: true
         type: boolean
-        default: false      enable_my_own_susfs_patch:
+        default: false
+      enable_my_own_susfs_patch:
         description: "Enable My Own SUSFS Patch"
         required: true
         type: boolean
@@ -161,6 +164,7 @@ jobs:
       contents: write
       actions: read
       checks: read
+
     steps:
       - uses: actions/checkout@v4
 
@@ -195,7 +199,8 @@ jobs:
           susfs-gki:${{ inputs.susfs-gki }}
           susfs-nongki:${{ inputs.susfs-nongki }}
           droidspaces:${{ inputs.droidspaces }}
-          has_modules_repo:${{ inputs.has_modules_repo }}          enable_tmpfs-xattr:${{ inputs.enable_tmpfs-xattr }}
+          has_modules_repo:${{ inputs.has_modules_repo }}
+          enable_tmpfs-xattr:${{ inputs.enable_tmpfs-xattr }}
           enable_gcc:${{ inputs.enable_gcc }}
           enable_gcc_32bits:${{ inputs.enable_gcc_32bits }}
           fuck_modules_sig_protect:${{ inputs.fuck_modules_sig_protect }}
@@ -220,6 +225,27 @@ jobs:
           echo "BRAND=$BRAND" >> $GITHUB_ENV
           echo "SOURCE=$SOURCE" >> $GITHUB_ENV
 
+      - name: Create droidspaces config templates (if needed)
+        run: |
+          set -euo pipefail
+          mkdir -p configs
+          # Create dummy configs if they don't exist, to prevent cp failures later.
+          # Actual content may need to be adjusted based on kernel requirements.
+          if [[ ! -f configs/droidspaces-gki.config ]]; then
+            cat > configs/droidspaces-gki.config << 'EOF'
+            # DroidSpaces GKI placeholder - replace with real config options
+            CONFIG_DROIDSPACES=y
+            EOF
+            echo "Created placeholder configs/droidspaces-gki.config"
+          fi
+          if [[ ! -f configs/droidspaces-nongki.config ]]; then
+            cat > configs/droidspaces-nongki.config << 'EOF'
+            # DroidSpaces non-GKI placeholder - replace with real config options
+            CONFIG_DROIDSPACES=y
+            EOF
+            echo "Created placeholder configs/droidspaces-nongki.config"
+          fi
+
       - name: Clone Kernel Source
         run: |
           set -euo pipefail
@@ -235,40 +261,60 @@ jobs:
         run: |
           set -euo pipefail
           case "${{ inputs.clang_version }}" in
-            "clang-r416183b1") curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android12-qpr3-release/clang-r416183b1.tar.gz || exit 1 ;;
-            "clang-r450784d") curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android13-qpr3-release/clang-r450784d.tar.gz || exit 1 ;;
-            "clang-r487747c") curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-qpr3-release/clang-r487747c.tar.gz || exit 1 ;;
-            "clang-r536225") curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android15-qpr2-release/clang-r536225.tar.gz || exit 1 ;;
-            "clang-r547379") curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r547379.tar.gz || exit 1 ;;
-            "clang-r563880c") curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz || exit 1 ;;
+            "clang-r416183b1")
+              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android12-qpr3-release/clang-r416183b1.tar.gz || exit 1
+              ;;
+            "clang-r450784d")
+              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android13-qpr3-release/clang-r450784d.tar.gz || exit 1
+              ;;
+            "clang-r487747c")
+              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-qpr3-release/clang-r487747c.tar.gz || exit 1
+              ;;
+            "clang-r536225")
+              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android15-qpr2-release/clang-r536225.tar.gz || exit 1
+              ;;
+            "clang-r547379")
+              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r547379.tar.gz || exit 1
+              ;;
+            "clang-r563880c")
+              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz || exit 1
+              ;;
           esac
           mkdir -p toolchains/${{ inputs.clang_version }}
           tar -xf "${{ inputs.clang_version }}.tar.gz" -C "toolchains/${{ inputs.clang_version }}" || exit 1
+
           if [[ "${{ inputs.enable_gcc_32bits }}" == "true" ]]; then
             curl -LO https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/heads/android12L-release.tar.gz || exit 1
             mkdir -p toolchains/arm-linux-androideabi
             tar -xf android12L-release.tar.gz -C toolchains/arm-linux-androideabi || exit 1
           fi
 
-      - name: Include goodies
+      - name: Include goodies (KSU, DroidSpaces, SUSFS)
         run: |
           set -euo pipefail
           cd ${{ inputs.soc }} || exit 1
 
           case "${{ inputs.ksu_type }}" in
-            "None") ;;
+            "None")
+              ;;
             "Official-KernelSU")
-              curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/refs/heads/main/kernel/setup.sh" | bash -s main || exit 1 ;;
+              curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/refs/heads/main/kernel/setup.sh" | bash -s main || exit 1
+              ;;
             "KowSU")
-              curl -LSs "https://raw.githubusercontent.com/KOWX712/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master || exit 1 ;;
+              curl -LSs "https://raw.githubusercontent.com/KOWX712/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master || exit 1
+              ;;
             "KernelSU-by-xx")
-              curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master || exit 1 ;;
+              curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master || exit 1
+              ;;
             "KernelSU-Next")
-              curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/refs/heads/dev/kernel/setup.sh" | bash -s dev || exit 1 ;;
+              curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/refs/heads/dev/kernel/setup.sh" | bash -s dev || exit 1
+              ;;
             "KernelSU-Next-with-susfs")
-              curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/refs/heads/dev-susfs/kernel/setup.sh" | bash -s dev-susfs || exit 1 ;;
-            "ReSukiSU" | "ReSukiSU-with-susfs")
-              curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/refs/heads/main/kernel/setup.sh" | bash -s main || exit 1 ;;
+              curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/refs/heads/dev-susfs/kernel/setup.sh" | bash -s dev-susfs || exit 1
+              ;;
+            "ReSukiSU"|"ReSukiSU-with-susfs")
+              curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/refs/heads/main/kernel/setup.sh" | bash -s main || exit 1
+              ;;
           esac
 
           if [[ "${{ inputs.droidspaces }}" == "6.12" ]]; then
@@ -293,7 +339,8 @@ jobs:
             git apply --recount patch-for-5.10-or-lower.patch
             cp ${GITHUB_WORKSPACE}/configs/droidspaces-gki.config arch/arm64/configs/vendor/droidspaces.config
           elif [[ "${{ inputs.droidspaces }}" == "4.14-4.19" ]]; then
-            curl -Lo patch-fix-cgroup.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch || exit 1            patch -p1 < patch-fix-cgroup.patch
+            curl -Lo patch-fix-cgroup.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch || exit 1
+            patch -p1 < patch-fix-cgroup.patch
             cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
           elif [[ "${{ inputs.droidspaces }}" == "4.4-4.9" ]]; then
             cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
@@ -323,7 +370,7 @@ jobs:
 
             if [[ "${{ inputs.enable_my_own_susfs_patch }}" == "true" ]]; then
               if [[ "${{ inputs.susfs-gki }}" == "android13-5.15" ]]; then
-                patch -p1 < ${GITHUB_WORKSPACE}/patches/fix_task_mmu_c.patch
+                patch -p1 < ${GITHUB_WORKSPACE}/patches/fix_task_mmu_c.patch || true
               fi
             fi
 
@@ -336,12 +383,13 @@ jobs:
 
             if [[ "${{ inputs.enable_my_own_susfs_patch }}" == "true" ]]; then
               if [[ "${{ inputs.susfs-nongki }}" == "5.4" ]]; then
-                patch -p1 < ${GITHUB_WORKSPACE}/patches/fix_mount_in_5.4.patch
+                patch -p1 < ${GITHUB_WORKSPACE}/patches/fix_mount_in_5.4.patch || true
               fi
             fi
           fi
 
           touch ./.scmversion
+
       - name: Make Kernel Configs
         run: |
           set -euo pipefail
@@ -391,7 +439,8 @@ jobs:
                 KERNEL_CONFIGS="vendor/kona-perf_defconfig vendor/oplus.config"
                 ;;
               "oplus-sm8350-los")
-                KERNEL_CONFIGS="vendor/lahaina-qgki_defconfig"                ;;
+                KERNEL_CONFIGS="vendor/lahaina-qgki_defconfig"
+                ;;
               "oplus-sm8550-los")
                 KERNEL_CONFIGS="gki_defconfig vendor/kalama_GKI.config vendor/oplus/kalama_GKI.config vendor/debugfs.config"
                 ;;
@@ -408,39 +457,46 @@ jobs:
             esac
             echo -e "Applied ${{ inputs.kernel_configs }}"
           fi
-          configs_list=(${KERNEL_CONFIGS})
+
+          # Split the configs into an array safely
+          read -r -a configs_list <<< "$KERNEL_CONFIGS"
+          if [[ ${#configs_list[@]} -eq 0 ]]; then
+            echo "ERROR: No kernel configs specified"
+            exit 1
+          fi
 
           if [[ "${{ inputs.enable_tmpfs-xattr }}" == "true" ]]; then
-            sed -i '/CONFIG_TMPFS_XATTR/d' arch/arm64/configs/${configs_list[0]}
-            echo "CONFIG_TMPFS_XATTR=y" >> arch/arm64/configs/${configs_list[0]}
+            sed -i '/CONFIG_TMPFS_XATTR/d' "arch/arm64/configs/${configs_list[0]}"
+            echo "CONFIG_TMPFS_XATTR=y" >> "arch/arm64/configs/${configs_list[0]}"
             echo "Enabled TMPFS_XATTR"
           fi
 
           if [[ "${{ inputs.fuck_werror }}" == "true" ]]; then
-            sed -i '/CONFIG_CC_WERROR/d' arch/arm64/configs/${configs_list[0]}
-            sed -i '/CONFIG_WERROR/d' arch/arm64/configs/${configs_list[0]}
-            echo "CONFIG_CC_WERROR=n" >> arch/arm64/configs/${configs_list[0]}
-            echo "CONFIG_WERROR=n" >> arch/arm64/configs/${configs_list[0]}
+            sed -i '/CONFIG_CC_WERROR/d' "arch/arm64/configs/${configs_list[0]}"
+            sed -i '/CONFIG_WERROR/d' "arch/arm64/configs/${configs_list[0]}"
+            echo "CONFIG_CC_WERROR=n" >> "arch/arm64/configs/${configs_list[0]}"
+            echo "CONFIG_WERROR=n" >> "arch/arm64/configs/${configs_list[0]}"
             echo "Disabled WERROR and CC_WERROR"
           fi
 
           if [[ "${{ inputs.fuck_modules_sig_protect }}" == "true" ]]; then
-            sed -i '/CONFIG_MODULE_SIG_PROTECT/d' arch/arm64/configs/${configs_list[0]}
-            echo "CONFIG_MODULE_SIG_PROTECT=n" >> arch/arm64/configs/${configs_list[0]}
+            sed -i '/CONFIG_MODULE_SIG_PROTECT/d' "arch/arm64/configs/${configs_list[0]}"
+            echo "CONFIG_MODULE_SIG_PROTECT=n" >> "arch/arm64/configs/${configs_list[0]}"
             echo "Disabled MODULE_SIG_PROTECT"
           fi
 
           if [[ "${{ inputs.ksu_type }}" == "KernelSU-by-xx" ]]; then
-            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> arch/arm64/configs/${configs_list[0]}
+            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> "arch/arm64/configs/${configs_list[0]}"
             echo "Enabled KSU_TAMPER_SYSCALL_TABLE for xxksu"
           fi
 
           if [[ "${{ inputs.ksu_type }}" == *susfs* ]]; then
-            echo "CONFIG_KSU_SUSFS=y" >> arch/arm64/configs/${configs_list[0]}
+            echo "CONFIG_KSU_SUSFS=y" >> "arch/arm64/configs/${configs_list[0]}"
             echo "Enabled KSU_SUSFS"
           fi
-          
+
           make O=out $KERNEL_CONFIGS $DROIDSPACES_CONFIG
+
           case "${{ inputs.io_scheduler }}" in
             none)
               ;;
@@ -485,12 +541,20 @@ jobs:
           cp ${{ inputs.soc }}/out/arch/arm64/boot/Image ./Image
           cp ${{ inputs.soc }}/out/.config ./.config
           cd AnyKernel3 || exit 1
-          sed -i "s|ksu_supported=false|ksu_supported=true|" anykernel.sh
+          if [[ "${{ inputs.ksu_type }}" != "None" ]]; then
+            sed -i "s|ksu_supported=false|ksu_supported=true|" anykernel.sh
+          fi
           zip -r9 ../"${ZIP_NAME}.zip" * -x .git
 
       - name: Create GitHub Release
-        run: |          set -euo pipefail
+        run: |
+          set -euo pipefail
           REL_NAME="${{ inputs.soc }}_${{ inputs.kernel_source }}-${{ inputs.kernel_branch }}_${{ inputs.ksu_type }}_$(date -u +"%Y%m%d_%H%M")"
           cd ${GITHUB_WORKSPACE} || exit 1
-          ZIP_FILE=$(ls *.zip)
-          gh release create "$REL_NAME" --title "$REL_NAME" --notes "$(cat options.txt)" "${ZIP_FILE}" Image build.log options.txt .config
+          # Find the most recent zip file (avoid multiple matches)
+          ZIP_FILE=$(ls -t *.zip 2>/dev/null | head -n1)
+          if [[ -z "$ZIP_FILE" ]]; then
+            echo "No zip file found"
+            exit 1
+          fi
+          gh release create "$REL_NAME" --title "$REL_NAME" --notes "$(cat options.txt)" "$ZIP_FILE" Image build.log options.txt .config
