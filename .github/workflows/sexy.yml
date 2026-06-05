@@ -47,7 +47,8 @@ on:
         type: choice
         default: android_kernel
         options: [android_kernel, kernel]
-      kernel_branch:        description: "Kernel-Branch"
+      kernel_branch:        
+        description: "Kernel-Branch"
         required: true
         type: string
         default: "lineage-23.2"
