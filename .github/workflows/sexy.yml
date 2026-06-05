@@ -229,20 +229,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p configs
-          # Create dummy configs if they don't exist, to prevent cp failures later.
-          # Actual content may need to be adjusted based on kernel requirements.
           if [[ ! -f configs/droidspaces-gki.config ]]; then
-            cat > configs/droidspaces-gki.config << 'EOF'
-            # DroidSpaces GKI placeholder - replace with real config options
-            CONFIG_DROIDSPACES=y
-            EOF
+            printf '%s\n' '# DroidSpaces GKI placeholder' 'CONFIG_DROIDSPACES=y' > configs/droidspaces-gki.config
             echo "Created placeholder configs/droidspaces-gki.config"
           fi
           if [[ ! -f configs/droidspaces-nongki.config ]]; then
-            cat > configs/droidspaces-nongki.config << 'EOF'
-            # DroidSpaces non-GKI placeholder - replace with real config options
-            CONFIG_DROIDSPACES=y
-            EOF
+            printf '%s\n' '# DroidSpaces non-GKI placeholder' 'CONFIG_DROIDSPACES=y' > configs/droidspaces-nongki.config
             echo "Created placeholder configs/droidspaces-nongki.config"
           fi
 
@@ -293,6 +285,9 @@ jobs:
         run: |
           set -euo pipefail
           cd ${{ inputs.soc }} || exit 1
+
+          # Ensure vendor config directory exists
+          mkdir -p arch/arm64/configs/vendor
 
           case "${{ inputs.ksu_type }}" in
             "None")
@@ -551,7 +546,6 @@ jobs:
           set -euo pipefail
           REL_NAME="${{ inputs.soc }}_${{ inputs.kernel_source }}-${{ inputs.kernel_branch }}_${{ inputs.ksu_type }}_$(date -u +"%Y%m%d_%H%M")"
           cd ${GITHUB_WORKSPACE} || exit 1
-          # Find the most recent zip file (avoid multiple matches)
           ZIP_FILE=$(ls -t *.zip 2>/dev/null | head -n1)
           if [[ -z "$ZIP_FILE" ]]; then
             echo "No zip file found"
