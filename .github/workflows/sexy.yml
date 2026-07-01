@@ -67,6 +67,7 @@ on:
           - oplus-sm8350-los
           - oplus-sm8550-los
           - oplus-sm8650-los
+          - oplus-sm8650-yaap
           - oplus-sm8750-los
       kernel_configs_manual:
         description: "Kernel-Configs-Manual"
@@ -440,6 +441,9 @@ jobs:
                 KERNEL_CONFIGS="gki_defconfig vendor/kalama_GKI.config vendor/oplus/kalama_GKI.config vendor/debugfs.config"
                 ;;
               "oplus-sm8650-los")
+                KERNEL_CONFIGS="gki_defconfig vendor/pineapple_GKI.config vendor/oplus/pineapple_GKI.config"
+                ;;
+              "oplus-sm8650-yaap")
                 KERNEL_CONFIGS="gki_defconfig vendor/pineapple_GKI.config vendor/oplus/pineapple_GKI.config"
                 ;;
               "oplus-sm8750-los")
