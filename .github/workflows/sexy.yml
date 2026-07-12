@@ -510,6 +510,8 @@ jobs:
 
           echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> out/.config
 
+          make O=out olddefconfig
+
       - name: Build Kernel Image
         run: |
           set -euo pipefail
