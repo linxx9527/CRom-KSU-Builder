@@ -507,8 +507,11 @@ jobs:
               echo "CONFIG_DEFAULT_IOSCHED=\"${{ inputs.io_scheduler }}\"" >> out/.config
               ;;
           esac
-
           echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> out/.config
+
+          echo "CONFIG_MODULE_SIG=n" >> out/.config
+          echo "CONFIG_SYSTEM_TRUSTED_KEYS=\"\"" >> out/.config
+          echo "CONFIG_SYSTEM_EXTRA_CERTIFICATE=n" >> out/.config
 
           make O=out olddefconfig
 
